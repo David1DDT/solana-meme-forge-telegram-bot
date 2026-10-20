@@ -3,7 +3,13 @@ import logging
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from config import LANGUAGES, AMOUNT, get_custom_address_cost_text, format_custom_address_summary
+from settings import (
+    LANGUAGES,
+    AMOUNT,
+    SERVICE_WALLET_ADDRESS,
+    get_custom_address_cost_text,
+    format_custom_address_summary,
+)
 from utils.telegram_formatter import TelegramFormatter
 from utils.handlers import (
     get_user_info, log_user_action,
@@ -413,7 +419,7 @@ async def process_confirmation(callback_query: types.CallbackQuery, state: FSMCo
         except Exception as e:
             logging.info(f"Could not delete previous payment message: {e}")
 
-    service_wallet = "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU"
+    service_wallet = SERVICE_WALLET_ADDRESS
 
     total_amount = get_payment_amount(user_data)
 

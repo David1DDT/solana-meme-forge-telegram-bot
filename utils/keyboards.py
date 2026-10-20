@@ -1,6 +1,6 @@
 """Keyboards for memecoin bot"""
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
-from config import LANGUAGES, CUSTOM_ADDRESS_PRICES, CUSTOM_ADDRESS_EMOJIS
+from settings import LANGUAGES, CUSTOM_ADDRESS_PRICES, CUSTOM_ADDRESS_EMOJIS
 
 
 def get_supply_keyboard():

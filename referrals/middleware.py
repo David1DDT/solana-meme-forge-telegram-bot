@@ -97,7 +97,7 @@ async def ensure_user_in_referral_db(user):
     Works without errors even if DB unavailable
     """
     try:
-        from config import BONUS_CUSTOM_ADDRESSES
+        from settings import BONUS_CUSTOM_ADDRESSES
 
         user_id = user.id
         username = user.username

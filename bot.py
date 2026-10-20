@@ -3,7 +3,7 @@ from aiogram import Bot, Dispatcher, types, F
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.filters import Command
-from config import LANGUAGES, TOKENS, AMOUNT
+from settings import LANGUAGES, TOKENS, AMOUNT
 from utils.telegram_formatter import TelegramFormatter
 
 logging.basicConfig(level=logging.INFO)
@@ -32,7 +32,7 @@ class BotStates(StatesGroup):
 @dp.message(Command("user_stats"))
 async def cmd_user_stats(message: types.Message):
     """Admin command for viewing specific user statistics"""
-    from config import ADMIN_ID
+    from settings import ADMIN_ID
 
     if message.from_user.id != ADMIN_ID:
         await message.answer("❌ Access denied")
@@ -340,25 +340,26 @@ dp.message.register(cmd_db_stats, Command("db_stats"))
 @dp.message(Command("wallet_stats"))
 async def cmd_wallet_stats(message: types.Message):
     """Admin command for viewing wallet reservation statistics"""
-    from config import ADMIN_ID
+    from settings import ADMIN_ID
+    from utils.admin_handlers import get_wallet_database_stats
 
-    if message.from_user.id != ADMIN_ID:
+    if not message.from_user or message.from_user.id != ADMIN_ID:
         await message.answer("❌ Access denied")
         return
 
-    # Advanced wallet statistics
-    stats_text = """
-**Wallet Reservation Statistics:**
+    try:
+        counts = get_wallet_database_stats()
+    except Exception as error:
+        logging.exception("Could not read wallet reservation statistics")
+        await message.answer(f"❌ Could not read wallet statistics: {error}")
+        return
 
-🔒 **Currently Reserved:** 0
-⏳ **Total Reservations Today:** 0
-✅ **Successfully Released:** 0
-❌ **Force Released:** 0
-
-**Recent Activity:** No activity
-    """
-
-    await message.answer(stats_text, parse_mode="MarkdownV2")
+    await message.answer(
+        "Wallet Reservation Statistics:\n"
+        f"🔓 Available: {counts['available']}\n"
+        f"🔒 Currently reserved: {counts['reserved']}\n"
+        f"📦 Total: {sum(counts.values())}"
+    )
 
 
 dp.callback_query.register(create_again, lambda c: c.data == "create_again")

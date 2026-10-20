@@ -4,7 +4,7 @@ from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.markdown import code
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from config import LANGUAGES, AMOUNT
+from settings import LANGUAGES, AMOUNT, SERVICE_WALLET_ADDRESS
 from utils.telegram_formatter import TelegramFormatter
 from utils.payment_checker import get_payment_amount
 
@@ -44,7 +44,9 @@ async def check_payment(callback_query: types.CallbackQuery, state: FSMContext):
 
     try:
         sender_wallet = user_data.get("user_wallet")
-        service_wallet = "your_service_wallet_address_here"
+        service_wallet = SERVICE_WALLET_ADDRESS
+        if not service_wallet:
+            raise RuntimeError("SERVICE_WALLET_ADDRESS is missing from the environment")
 
         expected_amount = get_payment_amount(user_data)
 

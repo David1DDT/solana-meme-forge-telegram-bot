@@ -2,16 +2,12 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
+const { loadEnv } = require('../scripts/env');
 
-function getDebugModeFromConfig() {
-    try {
-        const configPath = path.join(__dirname, '..', 'config.py');
-        const configContent = fs.readFileSync(configPath, 'utf-8');
-        const debugMatch = configContent.match(/DEBUG_MODE\s*=\s*(True|False)/);
-        return debugMatch ? debugMatch[1] === 'True' : true;
-    } catch (error) {
-        return true;
-    }
+loadEnv();
+
+function getDebugModeFromEnv() {
+    return (process.env.DEBUG_MODE || 'false').toLowerCase() === 'true';
 }
 
 function getDbPaths(debugMode) {
@@ -30,7 +26,7 @@ function getDbPaths(debugMode) {
     }
 }
 
-const DEBUG_MODE = getDebugModeFromConfig();
+const DEBUG_MODE = getDebugModeFromEnv();
 const dbPaths = getDbPaths(DEBUG_MODE);
 const DB_PATH = dbPaths.meme;
 
@@ -41,8 +37,25 @@ class WalletManager {
     }
 
     async _upgradeTable() {
-        // Database schema upgrade logic would be here
-        return Promise.resolve();
+        return new Promise((resolve, reject) => {
+            this.db.run(`
+                CREATE TABLE IF NOT EXISTS meme_wallets (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    private_key TEXT NOT NULL UNIQUE,
+                    public_key TEXT NOT NULL UNIQUE,
+                    status TEXT NOT NULL DEFAULT 'available'
+                        CHECK (status IN ('available', 'reserved')),
+                    created_at REAL NOT NULL DEFAULT (julianday('now')),
+                    updated_at REAL NOT NULL DEFAULT (julianday('now'))
+                )
+            `, (error) => {
+                if (error) {
+                    reject(new Error(`Wallet table initialization failed: ${error.message}`));
+                } else {
+                    resolve();
+                }
+            });
+        });
     }
 
     connect() {
@@ -51,12 +64,18 @@ class WalletManager {
                 if (err) {
                     reject(new Error(`Database connection error: ${err.message}`));
                 } else {
-                    try {
-                        await this._upgradeTable();
-                        resolve();
-                    } catch (upgradeErr) {
-                        reject(upgradeErr);
-                    }
+                    fs.chmod(this.dbFile, 0o600, async (chmodError) => {
+                        if (chmodError) {
+                            reject(new Error(`Could not restrict wallet database permissions: ${chmodError.message}`));
+                            return;
+                        }
+                        try {
+                            await this._upgradeTable();
+                            resolve();
+                        } catch (upgradeErr) {
+                            reject(upgradeErr);
+                        }
+                    });
                 }
             });
         });
@@ -76,17 +95,74 @@ class WalletManager {
 
     getRandomMemeKey() {
         return new Promise((resolve, reject) => {
-            // Implementation would query database for MEME wallets
-            // This is a placeholder that returns null (no wallets available)
-            resolve(null);
+            this.db.serialize(() => {
+                this.db.run('BEGIN IMMEDIATE', (beginError) => {
+                    if (beginError) {
+                        reject(new Error(`Could not reserve a wallet: ${beginError.message}`));
+                        return;
+                    }
+
+                    this.db.get(
+                        "SELECT id, private_key, public_key FROM meme_wallets WHERE status = 'available' ORDER BY RANDOM() LIMIT 1",
+                        (selectError, wallet) => {
+                            if (selectError) {
+                                this.db.run('ROLLBACK');
+                                reject(new Error(`Could not select a wallet: ${selectError.message}`));
+                                return;
+                            }
+
+                            if (!wallet) {
+                                this.db.run('COMMIT', (commitError) => {
+                                    if (commitError) {
+                                        reject(new Error(`Could not finish wallet lookup: ${commitError.message}`));
+                                    } else {
+                                        resolve(null);
+                                    }
+                                });
+                                return;
+                            }
+
+                            this.db.run(
+                                "UPDATE meme_wallets SET status = 'reserved', updated_at = julianday('now') WHERE id = ? AND status = 'available'",
+                                [wallet.id],
+                                (updateError) => {
+                                    if (updateError) {
+                                        this.db.run('ROLLBACK');
+                                        reject(new Error(`Could not reserve a wallet: ${updateError.message}`));
+                                        return;
+                                    }
+                                    this.db.run('COMMIT', (commitError) => {
+                                        if (commitError) {
+                                            reject(new Error(`Could not finish wallet reservation: ${commitError.message}`));
+                                        } else {
+                                            resolve({
+                                                privateKey: wallet.private_key,
+                                                publicKey: wallet.public_key
+                                            });
+                                        }
+                                    });
+                                }
+                            );
+                        }
+                    );
+                });
+            });
         });
     }
 
     deleteMemeKeyByPrivateKey(privateKey) {
         return new Promise((resolve, reject) => {
-            // Implementation would delete wallet from database
-            // This is a placeholder
-            resolve(false);
+            this.db.run(
+                'DELETE FROM meme_wallets WHERE private_key = ?',
+                [privateKey],
+                function (error) {
+                    if (error) {
+                        reject(new Error(`Could not delete wallet: ${error.message}`));
+                    } else {
+                        resolve(this.changes > 0);
+                    }
+                }
+            );
         });
     }
 

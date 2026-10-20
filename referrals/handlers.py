@@ -68,7 +68,7 @@ def get_referral_keyboard(user_info):
 
 async def cmd_referral(message: types.Message, state: FSMContext):
     """Command /referral - show referral information"""
-    from config import REFERRAL_TOKEN_COMMISSION, REFERRAL_CUSTOM_COMMISSION, AMOUNT
+    from settings import REFERRAL_TOKEN_COMMISSION, REFERRAL_CUSTOM_COMMISSION, AMOUNT
 
     user_id = message.from_user.id
     user_info_log = get_user_info(message.from_user)

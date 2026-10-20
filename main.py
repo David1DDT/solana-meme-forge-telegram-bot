@@ -2,7 +2,7 @@
 import asyncio, logging, os, sys
 from bot import bot, dp
 from support_bot import support_bot, support_dp, startup_support_bot
-from config import DEBUG_MODE, SOLANA_NETWORK
+from settings import DEBUG_MODE, SOLANA_NETWORK
 
 os.environ['DEBUG_MODE'] = str(DEBUG_MODE).lower()
 os.environ['SOLANA_NETWORK'] = SOLANA_NETWORK

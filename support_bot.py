@@ -3,7 +3,7 @@ import json
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.filters import Command
-from config import TOKENS, ADMIN_ID
+from settings import TOKENS, ADMIN_ID
 
 support_bot = Bot(token=TOKENS['support_bot'])
 support_dp = Dispatcher(storage=MemoryStorage())

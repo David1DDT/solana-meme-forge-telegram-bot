@@ -1,17 +1,12 @@
 #!/usr/bin/env node
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const fs = require('fs');
+const { loadEnv } = require('../scripts/env');
 
-function getDebugModeFromConfig() {
-    try {
-        const configPath = path.join(__dirname, '..', 'config.py');
-        const configContent = fs.readFileSync(configPath, 'utf-8');
-        const debugMatch = configContent.match(/DEBUG_MODE\s*=\s*(True|False)/);
-        return debugMatch ? debugMatch[1] === 'True' : true;
-    } catch (error) {
-        return true;
-    }
+loadEnv();
+
+function getDebugModeFromEnv() {
+    return (process.env.DEBUG_MODE || 'false').toLowerCase() === 'true';
 }
 
 function getReferralDbPath(debugMode) {
@@ -19,7 +14,7 @@ function getReferralDbPath(debugMode) {
     return path.join(dbDir, debugMode ? 'referrals_test.db' : 'referrals.db');
 }
 
-const DEBUG_MODE = getDebugModeFromConfig();
+const DEBUG_MODE = getDebugModeFromEnv();
 const DB_PATH = getReferralDbPath(DEBUG_MODE);
 
 class ReferralDbManager {

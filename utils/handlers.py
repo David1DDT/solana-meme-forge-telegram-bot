@@ -4,7 +4,7 @@ from aiogram import types, F
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
 from utils.keyboards import get_supply_keyboard, get_confirm_keyboard, get_check_payment_keyboard, get_create_again_keyboard
-from config import LANGUAGES, AMOUNT
+from settings import LANGUAGES, AMOUNT
 from utils.custom_address_manager import calculate_custom_price
 
 

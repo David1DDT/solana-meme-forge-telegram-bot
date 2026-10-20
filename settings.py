@@ -1,19 +1,24 @@
 """Configuration for memecoin bot"""
 
-# MAIN TOGGLE - SINGLE POINT FOR MODE CONTROL
-DEBUG_MODE = False  # True = test/devnet, False = production/mainnet
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Main runtime settings. Secrets belong in the ignored .env file.
+DEBUG_MODE = os.getenv("DEBUG_MODE", "false").lower() == "true"
 
 # USE MEME WALLETS FROM DATABASE
-USE_MEME_MINT_DATABASE = True  # True = get mint from DB with meme addresses, False = standard logic
+USE_MEME_MINT_DATABASE = os.getenv("USE_MEME_MINT_DATABASE", "true").lower() == "true"
 
 # TEST MODE (direct script execution)
-TEST_MODE = False  # True = run script directly, False = through bot
+TEST_MODE = os.getenv("TEST_MODE", "false").lower() == "true"
 
 # USE PREDEFINED MINT ADDRESS
-USE_PREDEFINED_MINT = False  # True = use pre-generated mint, False = random
+USE_PREDEFINED_MINT = os.getenv("USE_PREDEFINED_MINT", "false").lower() == "true"
 
-# Predefined mint - Base58 encoded seed (32 bytes)
-PREDEFINED_MINT_PRIVATE_KEY = "your-predefined-mint-private-key-here"  # Base58 seed
+# Optional predefined mint private key, provided only through the environment.
+PREDEFINED_MINT_PRIVATE_KEY = os.getenv("PREDEFINED_MINT_PRIVATE_KEY", "")
 
 # Test parameters (used when TEST_MODE = True)
 TEST_PARAMS = {
@@ -26,8 +31,9 @@ TEST_PARAMS = {
 }
 
 # Payment settings
-AMOUNT = 0.09  # SOL
+AMOUNT = float(os.getenv("PAYMENT_AMOUNT", "0.09"))
 AMOUNT_TEXT = f"{AMOUNT:.2f} SOL"
+SERVICE_WALLET_ADDRESS = os.getenv("SERVICE_WALLET_ADDRESS", "").strip()
 
 # Referral commissions (configurable)
 REFERRAL_TOKEN_COMMISSION = 0.10  # 10% of token cost
@@ -107,17 +113,19 @@ def format_custom_address_summary(summary, custom_ending=None):
             # Fallback - add at the end
             return f"{summary}\n{custom_text}"
 
-# Bot tokens - REPLACE WITH YOUR OWN
+# Bot tokens
 TOKENS = {
-    'main_bot': 'your-main-bot-token-here',
-    'support_bot': 'your-support-bot-token-here'
+    'main_bot': os.getenv('MAIN_BOT_TOKEN', ''),
+    'support_bot': os.getenv('SUPPORT_BOT_TOKEN', '')
 }
 
 # Solana network
-SOLANA_NETWORK = 'devnet' if DEBUG_MODE else 'mainnet-beta'
+SOLANA_NETWORK = os.getenv(
+    "SOLANA_NETWORK", "devnet" if DEBUG_MODE else "mainnet-beta"
+)
 
-# Admin ID - REPLACE WITH YOUR TELEGRAM ID
-ADMIN_ID = 123456789
+# Admin ID
+ADMIN_ID = int(os.getenv('ADMIN_ID', '0'))
 
 LANGUAGES = {
     'choose_language': 'Welcome to Memecoin Creator bot!',

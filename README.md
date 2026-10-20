@@ -22,7 +22,7 @@ Try the working bot: [@Meme_Forge_bot](https://t.me/Meme_Forge_bot)
 ```
 ├── bot.py                 # Main bot entry point
 ├── main.py               # Application launcher
-├── config.py             # Configuration settings
+├── settings.py           # Non-secret runtime settings and bot text
 ├── utils/                # Utility modules
 │   ├── handlers.py       # Core message handlers
 │   ├── state_handlers.py # FSM state handlers
@@ -80,24 +80,12 @@ cp .env.example .env
 # Edit .env with your actual values
 ```
 
-### 5. Configure Settings
+Set `MAIN_BOT_TOKEN`, `SUPPORT_BOT_TOKEN`, `ADMIN_ID`, `SERVICE_WALLET_ADDRESS`,
+`HELIUS_API_KEY`, and the Pinata credentials in `.env`. Keep `.env` private and
+never commit it. Runtime values are loaded from environment variables by
+`settings.py` and the JavaScript scripts.
 
-Edit `config.py` and replace placeholder values:
-
-```python
-# Bot tokens
-TOKENS = {
-    'main_bot': 'your-actual-bot-token',
-    'support_bot': 'your-support-bot-token'
-}
-
-# Admin ID
-ADMIN_ID = your_telegram_user_id
-
-# Other settings...
-```
-
-### 6. Create Wallet File
+### 5. Create Wallet File
 
 Create `wallet.json` with your Solana wallet:
 
@@ -164,7 +152,7 @@ The project is split between Python (bot logic) and JavaScript (Solana operation
 
 1. Create handlers in appropriate modules
 2. Register handlers in `bot.py`
-3. Add language strings to `config.py`
+3. Add language strings to `settings.py`
 4. Update database schema if needed
 
 ## 🔒 Security Features
@@ -239,7 +227,7 @@ CUSTOM_ADDRESS_PRICES = {
    - Check file permissions
 
 2. **"Invalid bot token"**
-   - Verify bot tokens in config
+   - Verify bot tokens in `.env`
    - Check token format
 
 3. **"Connection timeout"**
@@ -252,7 +240,7 @@ CUSTOM_ADDRESS_PRICES = {
 
 ### Debug Mode
 
-Set `DEBUG_MODE = True` in config.py for:
+Set `DEBUG_MODE=true` in `.env` for:
 - Detailed logging
 - Devnet operations
 - Test database usage

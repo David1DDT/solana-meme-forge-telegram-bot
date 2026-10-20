@@ -3,7 +3,7 @@ import logging
 import asyncio
 from aiogram import types
 from aiogram.fsm.context import FSMContext
-from config import LANGUAGES, AMOUNT, get_custom_address_cost_text, format_custom_address_summary
+from settings import LANGUAGES, AMOUNT, get_custom_address_cost_text, format_custom_address_summary
 from utils.telegram_formatter import TelegramFormatter
 from utils.handlers import get_user_info, log_user_action, get_payment_amount
 from utils.keyboards import get_edit_data_keyboard, get_confirm_keyboard

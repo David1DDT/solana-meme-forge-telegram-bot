@@ -3,7 +3,7 @@ import logging
 import asyncio
 import json
 from decimal import Decimal, ROUND_HALF_UP
-from config import AMOUNT, REFERRAL_TOKEN_COMMISSION, REFERRAL_CUSTOM_COMMISSION
+from settings import AMOUNT, REFERRAL_TOKEN_COMMISSION, REFERRAL_CUSTOM_COMMISSION
 from referrals.middleware import call_referral_db_safe
 
 
